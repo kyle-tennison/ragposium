@@ -4,7 +4,7 @@ from typing import Iterator
 import chromadb
 from torch import Tensor
 from tqdm import tqdm
-from ragposium.app.arxiv import ArxivPaper
+from ragposium.lib.arxiv import ArxivPaper
 from loguru import logger
 import kagglehub
 from sentence_transformers import SentenceTransformer
