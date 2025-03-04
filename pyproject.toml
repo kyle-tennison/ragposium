@@ -1,5 +1,5 @@
 [project]
-name = "ragposium-core"
+name = "ragposium"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,7 +7,18 @@ authors = [
     { name = "Kyle Tennison", email = "kyletennison05@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "chromadb>=0.6.3",
+    "kagglehub>=0.3.8",
+    "loguru>=0.7.3",
+    "pydantic>=2.10.6",
+    "pymilvus>=2.5.4",
+    "sentence-transformers>=3.4.1",
+    "typer>=0.15.1",
+]
+
+[project.scripts]
+ragposium = "ragposium.app.__main__:main"
 
 [build-system]
 requires = ["hatchling"]

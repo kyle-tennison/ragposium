@@ -5,6 +5,16 @@ build/
 dist/
 wheels/
 *.egg-info
+py.typed
 
 # Virtual environments
 .venv
+
+# OS Files
+.vscode
+uv.lock
+.DS_Store
+
+
+# Misc
+.env
