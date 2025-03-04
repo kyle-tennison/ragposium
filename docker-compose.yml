@@ -3,18 +3,18 @@ services:
     image: chromadb/chroma:latest
     container_name: chroma
     ports:
-      - "5000:5000"
+      - "8000:8000"
     volumes:
       - ./chroma_data:/data
     # environment:
     #   - SOME_ENV_VAR=your_value
 
-  server:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
-    container_name: server
-    ports:
-      - "5000:5000"
-    depends_on:
-      - chroma
+  # server:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.server
+  #   container_name: server
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - chroma
