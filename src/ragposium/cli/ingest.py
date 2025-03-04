@@ -1,14 +1,9 @@
 import json
-import os
 from pathlib import Path
-from re import A
 from typing import Iterator
 import chromadb
-import numpy as np
-from pymilvus import MilvusClient, connections
 from torch import Tensor
 from tqdm import tqdm
-from ragposium import DATA_DIR
 from ragposium.app.arxiv import ArxivPaper
 from loguru import logger
 import kagglehub
@@ -24,7 +19,7 @@ class IngestionManager:
         logger.debug("Connecting to Chroma...")
 
         # self.chroma_client = chromadb.Client()
-        self.chroma_client = chromadb.HttpClient(host='localhost', port=8000)
+        self.chroma_client = chromadb.HttpClient(host='localhost', port=5000)
 
         if not any("ragposium"==col for col in self.chroma_client.list_collections()):
             self.chroma_client.create_collection(name="ragposium")
@@ -65,8 +60,8 @@ class IngestionManager:
 
     def iter_arxiv(self) -> Iterator[ArxivPaper]:
         """Iterate over the ArXiv papers available."""
-        
-        MAX_ITER = 10
+
+        MAX_ITER = 10000
 
         with self.arxiv_dataset.open('r') as f:
             for i, line in enumerate(f.readlines()):
@@ -83,19 +78,24 @@ class IngestionManager:
         return model.encode(abstract)
 
 
-    def run(self):
+    def ingest(self):
+        """Ingest the data into the collection."""
 
-        embeddings = []
-
+        already_included = 0
         total_entries = self.count_datasets()
         for paper in tqdm(self.iter_arxiv(), total=total_entries, desc="Ingesting"):
-            if paper.abstract:
-                embeddings.append(
-                    self.embed_abstract(paper.abstract)
-                    )
+
+            if self.collection.get(paper.id)["ids"]:
+                already_included += 1
+                continue
 
 
-        logger.info(f"Created {len(embeddings)} tensors")
+            if paper.abstract and paper.id:
+                self.collection.add(
+                    ids=paper.id,
+                    documents=paper.abstract,
+                )
+                
 
         
 
