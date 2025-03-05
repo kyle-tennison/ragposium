@@ -26,8 +26,7 @@ def query_endpoint(request: QueryRequest) -> QueryResponse:
 
     if request.n_results > 20:
         raise HTTPException(
-            status_code=400,
-            detail="Only 20 results can be listed at a time."
+            status_code=400, detail="Only 20 results can be listed at a time."
         )
 
     client = CoreClient.get_instance()

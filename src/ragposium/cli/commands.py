@@ -21,15 +21,18 @@ def ingest():
     ingester = IngestionManager()
     ingester.ingest()
 
+
 @app.command(help="Reset ragposium")
 def reset():
     "Reset ragposium entries. This will require a re-ingestion."
 
-    logger.warning("Running this will require a reset of ragposium. Please enter `delete-ragposium` to continue.")
+    logger.warning(
+        "Running this will require a reset of ragposium. Please enter `delete-ragposium` to continue."
+    )
 
     if input("> ") != "delete-ragposium":
         logger.error("Aborting")
-        return 
+        return
 
     ingester = IngestionManager()
     ingester.chroma_client.delete_collection("ragposium")
