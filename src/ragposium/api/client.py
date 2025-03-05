@@ -1,5 +1,9 @@
-from typing import Self
+import json
+from pprint import pprint
+from typing import Self, cast
 from ragposium.lib.arxiv import ArxivPaper
+from ragposium.lib.ingest import PaperMetadata
+from ragposium.api.datamodel import QueryResponse
 import chromadb
 from loguru import logger
 
@@ -29,7 +33,7 @@ class CoreClient:
             cls.singleton = cls()
         return cls.singleton
     
-    def query_papers(self, query: str, n_results: int) -> list[ArxivPaper]:
+    def query_papers(self, query: str, n_results: int) -> QueryResponse:
         """Query matching papers."""
 
         results = self.collection.query(
@@ -37,9 +41,29 @@ class CoreClient:
             n_results=n_results,
         )
 
-        
+        metadatas: list[PaperMetadata] = []
 
-        print(results)
 
-        return []
+        for metadata in (results["metadatas"] or [])[0]:
+
+            # metadata = cast(dict, metadata)
+
+            print(f"metadata: {json.dumps(metadata, indent=4)}")
+
+            metadatas.append(
+                PaperMetadata(
+                    url=str(metadata["url"]),
+                    title=str(metadata["title"]),
+                    authors=str(metadata["authors"]),
+                    abstract=str(metadata["abstract"]),
+                )
+            )
+
+        pprint(metadatas)
+        print("type of metadatas:" ,type(metadatas[0]))
+
+        return QueryResponse(
+            papers=metadatas,
+            distances=[]
+        )
 
