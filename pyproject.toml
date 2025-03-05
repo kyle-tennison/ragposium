@@ -13,12 +13,13 @@ dependencies = [
     "loguru>=0.7.3",
     "pydantic>=2.10.6",
     "pymilvus>=2.5.4",
+    "ruff>=0.9.9",
     "sentence-transformers>=3.4.1",
     "typer>=0.15.1",
 ]
 
 [project.scripts]
-ragposium = "ragposium.app.__main__:main"
+ragposium = "ragposium.cli.__main__:main"
 
 [build-system]
 requires = ["hatchling"]
