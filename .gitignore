@@ -16,5 +16,6 @@ uv.lock
 .DS_Store
 
 
-# Misc
+# Sensitive
 .env
+*.pem
