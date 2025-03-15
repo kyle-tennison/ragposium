@@ -10,4 +10,4 @@ COPY . /app
 RUN pip install .
 
 # Run the command 'ragposium ingest' when the container starts
-CMD ["ragposium", "ingest"]
+CMD ["ragposium", "start"]

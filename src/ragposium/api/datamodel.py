@@ -1,4 +1,3 @@
-from ragposium.lib.arxiv import ArxivPaper
 from ragposium.lib.ingest import PaperMetadata
 from pydantic import BaseModel
 
