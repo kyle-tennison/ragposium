@@ -1,3 +1,7 @@
+
+networks:
+  net:
+    driver: bridge
 services:
   chroma:
     image: chromadb/chroma:latest
@@ -5,7 +9,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./chroma_data:/data
+      - ./chromadb:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma # this is the default path, change it as needed
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+    networks:
+      - net
 
   server:
     build:
@@ -16,3 +26,5 @@ services:
       - "6123:8080"
     depends_on:
       - chroma
+    networks:
+      - net

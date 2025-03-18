@@ -54,12 +54,13 @@ class CoreClient:
         Returns:
             QueryResponse: A response containing matching papers.
         """
+        logger.info(f"Querying Chroma for {n_results} documents...")
         results = self.collection.query(query_texts=query, n_results=n_results)
+        logger.success(f"Chroma responded to query")
+
         metadatas: list[PaperMetadata] = []
 
         for metadata in (results.get("metadatas") or [])[0]:
-            print(f"metadata: {json.dumps(metadata, indent=4)}")
-
             metadatas.append(
                 PaperMetadata(
                     url=str(metadata["url"]),
@@ -68,7 +69,5 @@ class CoreClient:
                     abstract=str(metadata["abstract"]),
                 )
             )
-
-        pprint(metadatas)
 
         return QueryResponse(papers=metadatas, distances=[])

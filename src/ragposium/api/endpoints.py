@@ -1,7 +1,9 @@
+import re
 from fastapi import FastAPI, HTTPException
 from ragposium.api.datamodel import QueryRequest, MessageResponse, QueryResponse
 from ragposium.api.client import CoreClient
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 app = FastAPI(
     title="Ragposium", description="API documentation for Ragposium", version="1.0.0"
@@ -35,9 +37,11 @@ def health() -> MessageResponse:
 def query_endpoint(request: QueryRequest) -> QueryResponse:
     """Query the database for matching papers."""
 
+    logger.info(f"Received inbound query: {request!s}")
+
     if request.n_results > 20:
         raise HTTPException(
-            status_code=400, detail="Only 20 results can be listed at a time."
+            status_code=400, detail="Only 20 documents can be listed at a time."
         )
 
     client = CoreClient.get_instance()
