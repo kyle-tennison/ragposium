@@ -75,7 +75,7 @@ class IngestionManager:
         Path
             The directory containing the downloaded dataset.
         """
-        return Path(kagglehub.dataset_download("Cornell-University/arxiv"))
+        return Path(kagglehub.dataset_download("Cornell-University/arxiv", "/arxiv-data"))
 
     def count_datasets(self) -> int:
         """
