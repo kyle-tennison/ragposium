@@ -4,14 +4,16 @@ import uvicorn
 from ragposium.lib.ingest import IngestionManager
 from ragposium.api.endpoints import app as fastapi_app
 from loguru import logger
+from ragposium.api.client import CoreClient
 
-app = typer.Typer()
-
+app = typer.Typer(pretty_exceptions_enable=False)
 
 @app.command(name="start", help="Start the ragposium server.")
 def start():
     """Run the server."""
     logger.info("Starting server...")
+
+    CoreClient.get_instance() # connect to chroma
 
     certs_dir = Path(__file__).parent.parent.parent.parent / "certs"
     ssl_keyfile = certs_dir / "localhost-key.pem"

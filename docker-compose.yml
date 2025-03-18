@@ -6,8 +6,6 @@ services:
       - "8000:8000"
     volumes:
       - ./chroma_data:/data
-    # environment:
-    #   - SOME_ENV_VAR=your_value
 
   server:
     build:

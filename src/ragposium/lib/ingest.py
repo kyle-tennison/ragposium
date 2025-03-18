@@ -53,7 +53,7 @@ class IngestionManager:
         """
         logger.debug("Connecting to Chroma...")
         try:
-            self.chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+            self.chroma_client = chromadb.HttpClient(host="chroma", port=8000)
         except Exception as e:
             raise RuntimeError("Could not establish connection to Chroma.") from e
 
