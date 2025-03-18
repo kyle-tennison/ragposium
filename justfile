@@ -1,3 +1,5 @@
 self-sign:
     mkdir certs &
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem
+    mkcert -install
+    mkcert -cert-file certs/localhost.pem -key-file certs/localhost-key.pem localhost 127.0.0.1 0.0.0.0 ::1
+
