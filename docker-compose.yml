@@ -25,7 +25,7 @@ services:
     ports:
       - "6123:8080"
     volumes:
-      - ./arxiv-data:/arxiv-data
+      - ./kaggle-data:/kaggle-data
     depends_on:
       - chroma
     networks:

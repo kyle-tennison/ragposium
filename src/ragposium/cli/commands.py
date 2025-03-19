@@ -49,6 +49,7 @@ def reset():
 
     ingester = IngestionManager()
     ingester.chroma_client.delete_collection("ragposium")
+    ingester.chroma_client.delete_collection("dictionary")
 
     logger.info("Successfully deleted collection.")
 

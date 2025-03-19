@@ -17,6 +17,7 @@ uv.lock
 
 # Large files
 chromadb/
+kaggle-data/
 
 # Sensitive
 .env
