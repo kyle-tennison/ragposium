@@ -15,8 +15,13 @@ class QueryRequest(BaseModel):
     n_results: int
 
 
-class QueryResponse(BaseModel):
+class PaperQueryResponse(BaseModel):
     """Response to paper query."""
 
     papers: list[PaperMetadata]
     distances: list[float]
+
+class DictionaryQueryResponse(BaseModel):
+    """Response to dictionary query."""
+
+    words: list[str]

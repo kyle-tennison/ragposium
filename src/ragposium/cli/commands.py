@@ -39,17 +39,14 @@ def ingest():
 def reset():
     "Reset ragposium entries. This will require a re-ingestion."
 
-    logger.warning(
-        "Running this will require a reset of ragposium. Please enter `delete-ragposium` to continue."
-    )
+    logger.warning("Running this will permanently delete the targeted collections. Backup before running.")
 
-    if input("> ") != "delete-ragposium":
-        logger.error("Aborting")
-        return
+    logger.info("Info the name of the collection to delete.")
+
+    target_collection = input("> ")
 
     ingester = IngestionManager()
-    ingester.chroma_client.delete_collection("ragposium")
-    ingester.chroma_client.delete_collection("dictionary")
+    ingester.chroma_client.delete_collection(target_collection)
 
     logger.info("Successfully deleted collection.")
 

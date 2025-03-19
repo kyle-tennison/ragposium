@@ -5,7 +5,7 @@ from typing import Self
 import chromadb
 from loguru import logger
 
-from ragposium.api.datamodel import QueryResponse
+from ragposium.api.datamodel import PaperQueryResponse
 from ragposium.lib.ingest import PaperMetadata
 
 
@@ -25,10 +25,8 @@ class CoreClient:
         except Exception as e:
             raise RuntimeError("Could not establish connection to Chroma.") from e
 
-        if not any("ragposium" == col for col in self.chroma_client.list_collections()):
-            self.chroma_client.create_collection(name="ragposium")
-
-        self.collection = self.chroma_client.get_collection(name="ragposium")
+        self.paper_collection = self.chroma_client.get_collection(name="ragposium")
+        self.dictionary_collection = self.chroma_client.get_collection(name="dictionary")
         logger.success("Successfully connected to Chroma.")
 
     @classmethod
@@ -43,22 +41,25 @@ class CoreClient:
             cls.singleton = cls()
         return cls.singleton
 
-    def query_papers(self, query: str, n_results: int) -> QueryResponse:
+    def query_papers(self, query: str, n_results: int) -> PaperQueryResponse:
         """
         Query the ChromaDB collection for matching papers.
 
         Args:
-            query (str): The query string.
-            n_results (int): The number of results to return.
+            query: The query string.
+            n_results: The number of results to return.
 
         Returns:
-            QueryResponse: A response containing matching papers.
+            A response containing matching papers.
         """
-        logger.info(f"Querying Chroma for {n_results} documents...")
-        results = self.collection.query(query_texts=query, n_results=n_results)
-        logger.success(f"Chroma responded to query")
+
+        logger.info(f"Querying Chroma for {n_results} papers...")
+        results = self.paper_collection.query(query_texts=query, n_results=n_results)
+        logger.success(f"Chroma responded to paper query")
+        logger.debug(f"Query response was: {results}")
 
         metadatas: list[PaperMetadata] = []
+        distances: list[float] = [distance[0] for distance in results.get("distances") or []]
 
         for metadata in (results.get("metadatas") or [])[0]:
             metadatas.append(
@@ -70,4 +71,26 @@ class CoreClient:
                 )
             )
 
-        return QueryResponse(papers=metadatas, distances=[])
+        return PaperQueryResponse(papers=metadatas, distances=distances)
+
+
+    def query_dictionary(self, query: str, n_results: int) -> list[str]:
+        """
+        Query the ChromaDB dictionary collection to get the top n words that
+        correspond to a query.
+
+        Args:
+            query: The query string
+            n_results: The number of results to return
+
+        Returns:
+            A list of corresponding words
+        """
+
+        logger.info(f"Querying Chroma for {n_results} dictionary words...")
+        results = self.dictionary_collection.query(query_texts=query, n_results=n_results)
+        logger.success(f"Chroma responded to dictionary query")
+        logger.debug(f"Query response was: {results}")
+
+        words: list[str] = results.get("ids")[0]
+        return words

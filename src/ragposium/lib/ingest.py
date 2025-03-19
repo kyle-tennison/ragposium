@@ -155,11 +155,8 @@ class IngestionManager:
         ArxivPaper
             An instance representing an arXiv paper.
         """
-        MAX_ITER = 100000
         with self.arxiv_dataset.open("r") as f:
             for i, line in enumerate(f.readlines()):    
-                if i > MAX_ITER:
-                    return
                 yield ArxivPaper(**json.loads(line))
 
 
@@ -181,8 +178,9 @@ class IngestionManager:
                     continue
 
                 if i < 150_000:
-                    words.append(line.split(',')[1].strip())
+                    words.append(line.split(',')[0].strip())
 
+        logger.debug(f"Words sample: {words[:25]}")
 
         for word in tqdm(words, desc="Ingesting Dictionary"):
             if self.dictionary_collection.get(word)["ids"]:
