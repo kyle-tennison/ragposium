@@ -2,12 +2,17 @@ from asyncio import as_completed
 from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
+import shutil
 from typing import Iterator
+import uuid
 
 import chromadb
+from deprecated import deprecated
+from httpx import request
 import kagglehub
 from loguru import logger
 from pydantic import BaseModel
+import requests
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 from tqdm import tqdm
@@ -53,29 +58,81 @@ class IngestionManager:
         """
         logger.debug("Connecting to Chroma...")
         try:
-            self.chroma_client = chromadb.HttpClient(host="localhost", port=8000)
+            self.chroma_client = chromadb.HttpClient(host="chroma", port=8000)
         except Exception as e:
             raise RuntimeError("Could not establish connection to Chroma.") from e
 
+        # create collections if they don't already exist
         if not any("ragposium" == col for col in self.chroma_client.list_collections()):
             self.chroma_client.create_collection(name="ragposium")
+        if not any("dictionary" == col for col in self.chroma_client.list_collections()):
+            self.chroma_client.create_collection(name="dictionary")
 
-        self.collection = self.chroma_client.get_collection(name="ragposium")
+        # load collections
+        self.paper_collection = self.chroma_client.get_collection(name="ragposium")
+        self.dictionary_collection = self.chroma_client.get_collection(name="dictionary")
         logger.success("Successfully connected to Chroma.")
 
-        self.dataset_dir = self.download_datasets()
+        self.dataset_dir = self.download_papers()
         self.arxiv_dataset = self.dataset_dir / "arxiv-metadata-oai-snapshot.json"
 
-    def download_datasets(self) -> Path:
+    def download_papers(self) -> Path:
         """
-        Downloads the necessary datasets using Kaggle.
-
+        Downloads a dataset of Arxiv papers through Kaggle.
+        
         Returns
         -------
         Path
-            The directory containing the downloaded dataset.
+            The directory that contains the downloaded dataset.
         """
-        return Path(kagglehub.dataset_download("Cornell-University/arxiv"))
+
+        logger.info("Downloading arxiv papers...")
+        dataset_dir = Path("/kaggle-data/papers")
+
+        if dataset_dir.exists():
+            logger.info("Papers dataset already in volume")
+            return dataset_dir
+            
+        output_dir = Path(kagglehub.dataset_download("Cornell-University/arxiv"))
+        try:
+            shutil.move(output_dir, dataset_dir)
+        except OSError as e:
+            logger.warning(f"Failed to move papers dataset to persistent dir. "
+                           "This usually happens because ragposium is running "
+                           f"outside of its container. The error is: {e}")
+            return output_dir
+        else:
+            return dataset_dir
+            
+    @deprecated
+    def download_dictionary(self) -> Path:
+        """
+        Downloads a dataset of english words through Kaggle.
+        
+        Returns
+        -------
+        Path
+            The directory that contains the downloaded dataset.
+        """
+        
+        logger.info("Downloading words dataset...")
+        dataset_dir = Path("/kaggle-data/dictionary")
+
+        if dataset_dir.exists():
+            logger.info("Words dataset already in volume")
+            return dataset_dir
+
+        output_dir = Path(kagglehub.dataset_download("rtatman/english-word-frequency"))
+        try:
+            shutil.move(output_dir, dataset_dir)
+        except OSError as e:
+            logger.warning(f"Failed to move dict dataset to persistent dir. "
+                           "This usually happens because ragposium is running "
+                           f"outside of its container. The error is: {e}")
+            return output_dir
+        else:
+            return dataset_dir
+
 
     def count_datasets(self) -> int:
         """
@@ -101,39 +158,64 @@ class IngestionManager:
         ArxivPaper
             An instance representing an arXiv paper.
         """
-        MAX_ITER = 100000
         with self.arxiv_dataset.open("r") as f:
-            for i, line in enumerate(f.readlines()):
-                if i > MAX_ITER:
-                    return
+            for i, line in enumerate(f.readlines()):    
                 yield ArxivPaper(**json.loads(line))
 
-    def embed_abstract(self, abstract: str) -> Tensor:
-        """
-        Generates an embedding for a paper's abstract.
-
-        Parameters
-        ----------
-        abstract : str
-            The abstract text of the paper.
-
-        Returns
-        -------
-        Tensor
-            The embedding vector representation.
-        """
-        model = SentenceTransformer("all-MiniLM-L6-v2")
-        return model.encode(abstract)
 
     def ingest(self) -> None:
+        self.ingest_words()
+        self.ingest_papers()
+
+
+    @staticmethod
+    def load_mit_words() -> list[str]:
+        response = requests.get("https://www.mit.edu/~ecprice/wordlist.10000")
+
+        return [line.strip() for line in response.text.splitlines()]
+
+
+        
+
+    def ingest_words(self) -> None:
+        """Ingest words into the dictionary database."""
+        
+        words = self.load_mit_words()
+
+        # requests.get("https://www.mit.edu/~ecprice/wordlist.10000")
+
+        # dictionary_dataset = self.download_dictionary() / "unigram_freq.csv"
+        # with dictionary_dataset.open() as f:
+        #     for i, line in enumerate(f.readlines()):
+
+        #         # skip headers
+        #         if i == 0:
+        #             continue
+
+        #         if i < 150_000:
+        #             words.append(line.split(',')[0].strip())
+
+        logger.debug(f"Words sample: {words[:25]}")
+
+        for word in tqdm(words, desc="Ingesting Dictionary"):
+            if self.dictionary_collection.get(word)["ids"]:
+                continue
+
+            self.dictionary_collection.add(
+                ids=word,
+                documents=word
+            )
+
+
+    def ingest_papers(self) -> None:
         """
         Ingests papers into the ChromaDB collection, ensuring no duplicates.
         """
         already_included = 0
         total_entries = self.count_datasets()
 
-        for paper in tqdm(self.iter_arxiv(), total=total_entries, desc="Ingesting"):
-            if self.collection.get(paper.id)["ids"]:
+        for paper in tqdm(self.iter_arxiv(), total=total_entries, desc="Ingesting Papers"):
+            if self.paper_collection.get(paper.id)["ids"]:
                 already_included += 1
                 continue
 
@@ -148,7 +230,7 @@ class IngestionManager:
                     abstract=paper.abstract,
                 )
 
-                self.collection.add(
+                self.paper_collection.add(
                     ids=paper.id,
                     documents=paper.abstract,
                     metadatas=metadata.model_dump(mode="json"),

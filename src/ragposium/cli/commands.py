@@ -1,18 +1,31 @@
+from pathlib import Path
 import typer
 import uvicorn
 from ragposium.lib.ingest import IngestionManager
 from ragposium.api.endpoints import app as fastapi_app
 from loguru import logger
+from ragposium.api.client import CoreClient
 
-app = typer.Typer()
-
+app = typer.Typer(pretty_exceptions_enable=False)
 
 @app.command(name="start", help="Start the ragposium server.")
 def start():
     """Run the server."""
     logger.info("Starting server...")
 
-    uvicorn.run(fastapi_app, host="0.0.0.0", port=8080)
+    CoreClient.get_instance() # connect to chroma
+
+    certs_dir = Path(__file__).parent.parent.parent.parent / "certs"
+    ssl_keyfile = certs_dir / "localhost-key.pem"
+    ssl_certfile = certs_dir / "localhost.pem"
+
+    uvicorn.run(
+        fastapi_app, 
+        host="0.0.0.0", 
+        port=8080,
+        ssl_keyfile=ssl_keyfile,
+        ssl_certfile=ssl_certfile
+        )
 
 
 @app.command(help="Run ingester")
@@ -26,16 +39,14 @@ def ingest():
 def reset():
     "Reset ragposium entries. This will require a re-ingestion."
 
-    logger.warning(
-        "Running this will require a reset of ragposium. Please enter `delete-ragposium` to continue."
-    )
+    logger.warning("Running this will permanently delete the targeted collections. Backup before running.")
 
-    if input("> ") != "delete-ragposium":
-        logger.error("Aborting")
-        return
+    logger.info("Info the name of the collection to delete.")
+
+    target_collection = input("> ")
 
     ingester = IngestionManager()
-    ingester.chroma_client.delete_collection("ragposium")
+    ingester.chroma_client.delete_collection(target_collection)
 
     logger.info("Successfully deleted collection.")
 
