@@ -39,9 +39,9 @@ def query_papers(request: QueryRequest) -> PaperQueryResponse:
 
     logger.info(f"Received inbound paper query: {request!s}")
 
-    if request.n_results > 20:
+    if request.n_results > 200:
         raise HTTPException(
-            status_code=400, detail="Only 20 documents can be listed at a time."
+            status_code=400, detail="Only 200 documents can be listed at a time."
         )
 
     client = CoreClient.get_instance()
@@ -64,11 +64,12 @@ def query_dict(request: QueryRequest) -> DictionaryQueryResponse:
         )
     
     client = CoreClient.get_instance()
-    words = client.query_dictionary(
+    words, distances = client.query_dictionary(
         query=request.query,
         n_results=request.n_results,
     )
 
     return DictionaryQueryResponse(
-        words=words
+        words=words,
+        distances=distances
     )

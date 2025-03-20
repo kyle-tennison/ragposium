@@ -25,3 +25,4 @@ class DictionaryQueryResponse(BaseModel):
     """Response to dictionary query."""
 
     words: list[str]
+    distances: list[float]

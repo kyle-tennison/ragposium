@@ -7,9 +7,12 @@ from typing import Iterator
 import uuid
 
 import chromadb
+from deprecated import deprecated
+from httpx import request
 import kagglehub
 from loguru import logger
 from pydantic import BaseModel
+import requests
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 from tqdm import tqdm
@@ -101,7 +104,7 @@ class IngestionManager:
         else:
             return dataset_dir
             
-    
+    @deprecated
     def download_dictionary(self) -> Path:
         """
         Downloads a dataset of english words through Kaggle.
@@ -164,21 +167,33 @@ class IngestionManager:
         self.ingest_words()
         self.ingest_papers()
 
+
+    @staticmethod
+    def load_mit_words() -> list[str]:
+        response = requests.get("https://www.mit.edu/~ecprice/wordlist.10000")
+
+        return [line.strip() for line in response.text.splitlines()]
+
+
+        
+
     def ingest_words(self) -> None:
         """Ingest words into the dictionary database."""
         
-        words = []
+        words = self.load_mit_words()
 
-        dictionary_dataset = self.download_dictionary() / "unigram_freq.csv"
-        with dictionary_dataset.open() as f:
-            for i, line in enumerate(f.readlines()):
+        # requests.get("https://www.mit.edu/~ecprice/wordlist.10000")
 
-                # skip headers
-                if i == 0:
-                    continue
+        # dictionary_dataset = self.download_dictionary() / "unigram_freq.csv"
+        # with dictionary_dataset.open() as f:
+        #     for i, line in enumerate(f.readlines()):
 
-                if i < 150_000:
-                    words.append(line.split(',')[0].strip())
+        #         # skip headers
+        #         if i == 0:
+        #             continue
+
+        #         if i < 150_000:
+        #             words.append(line.split(',')[0].strip())
 
         logger.debug(f"Words sample: {words[:25]}")
 

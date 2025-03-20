@@ -59,7 +59,7 @@ class CoreClient:
         logger.debug(f"Query response was: {results}")
 
         metadatas: list[PaperMetadata] = []
-        distances: list[float] = [distance[0] for distance in results.get("distances") or []]
+        distances: list[float] = (results.get("distances") or [])[0]
 
         for metadata in (results.get("metadatas") or [])[0]:
             metadatas.append(
@@ -74,7 +74,7 @@ class CoreClient:
         return PaperQueryResponse(papers=metadatas, distances=distances)
 
 
-    def query_dictionary(self, query: str, n_results: int) -> list[str]:
+    def query_dictionary(self, query: str, n_results: int) -> tuple[list[str], list[float]]:
         """
         Query the ChromaDB dictionary collection to get the top n words that
         correspond to a query.
@@ -84,7 +84,7 @@ class CoreClient:
             n_results: The number of results to return
 
         Returns:
-            A list of corresponding words
+            A list of aligned words and a list of the corresponding distances
         """
 
         logger.info(f"Querying Chroma for {n_results} dictionary words...")
@@ -93,4 +93,6 @@ class CoreClient:
         logger.debug(f"Query response was: {results}")
 
         words: list[str] = results.get("ids")[0]
-        return words
+        distances: list[float] = (results.get("distances") or [])[0]
+
+        return words, distances
