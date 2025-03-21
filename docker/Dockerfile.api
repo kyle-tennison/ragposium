@@ -5,10 +5,10 @@ WORKDIR /app
 
 
 COPY src/ /app/src/
-COPY certs/ /app/certs/
 COPY pyproject.toml /app/
 COPY README.md /app/
 
+ENV UV_HTTP_TIMEOUT 120
 RUN uv pip install -e . --system
 
 CMD ["ragposium", "start"]

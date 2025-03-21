@@ -1,0 +1,25 @@
+# Use an official Bun image (adjust the image tag as needed)
+FROM oven/bun:latest
+
+WORKDIR /app
+# Copy your project files into the container
+COPY ragposium-react/ /app
+
+# Install dependencies using Bun
+RUN bun install
+
+# Expose the port your app will run on
+EXPOSE 3000
+
+# Pass build-time variable for VITE_RAGPOSIUM_URL and set it as an environment variable
+ARG VITE_RAGPOSIUM_URL
+ENV VITE_RAGPOSIUM_URL=${VITE_RAGPOSIUM_URL}
+
+# Build the project with Bun
+RUN bun run build
+
+# Install serve globally with Bun
+RUN bun add -g serve
+
+# Start the project using serve
+CMD ["serve", "-s", "dist", "-l", "3000"]
