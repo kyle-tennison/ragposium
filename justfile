@@ -1,8 +1,3 @@
-self-sign:
-    mkdir certs &
-    mkcert -install
-    mkcert -cert-file certs/localhost.pem -key-file certs/localhost-key.pem localhost 127.0.0.1 0.0.0.0 ::1
-
 restart-dev:
     docker compose -f docker/docker-compose-dev.yml down
     docker compose -f docker/docker-compose-dev.yml build
@@ -17,7 +12,7 @@ restart-dev:
 restart-prod:
     docker compose -f docker/docker-compose-prod.yml down
     docker compose -f docker/docker-compose-prod.yml build
-    docker compose -f docker/docker-compose-prod.yml up
-
-certbot:
+    docker compose -f docker/docker-compose-prod.yml up -d
     
+prod-watch:
+    docker compose -f docker/docker-compose-prod.yml logs -f
