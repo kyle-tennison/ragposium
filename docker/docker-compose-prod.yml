@@ -35,9 +35,9 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile.frontend
+      args:
+        - VITE_RAGPOSIUM_URL=https://ragposium.com/api/
     container_name: frontend 
-    environment:
-      - VITE_RAGPOSIUM_URL="nginx/api"
     ports:
       - "3000:3000"
     networks:

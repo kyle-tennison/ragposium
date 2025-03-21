@@ -35,6 +35,8 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile.frontend
+      args:
+        - VITE_RAGPOSIUM_URL=http://localhost/api/
     container_name: frontend 
     environment:
       - VITE_RAGPOSIUM_URL="nginx/api"
