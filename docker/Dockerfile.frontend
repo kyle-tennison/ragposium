@@ -1,0 +1,14 @@
+ARG DEPLOYMENT_STAGE="DEV"
+FROM node:18-alpine
+
+WORKDIR /app
+COPY ragposium-react/ /app
+
+RUN npm i
+
+EXPOSE 3000
+RUN npm run build
+RUN npm add -g serve
+
+# Start the project using serve
+CMD ["serve", "-s", "dist", "-l", "3000"]

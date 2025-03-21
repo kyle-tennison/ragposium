@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 app = FastAPI(
-    title="Ragposium", description="API documentation for Ragposium", version="1.0.0"
+    title="Ragposium", description="API documentation for Ragposium", version="1.0.0", root_path="/api"
 )
 
 

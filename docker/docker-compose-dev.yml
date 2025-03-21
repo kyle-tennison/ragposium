@@ -1,0 +1,70 @@
+
+networks:
+  net:
+    driver: bridge
+services:
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./chromadb:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma # this is the default path, change it as needed
+      - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-TRUE}
+    networks:
+      - net
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: api
+    ports:
+      - "6123:8080"
+    volumes:
+      - ./kaggle-data:/kaggle-data
+    depends_on:
+      - chroma
+    networks:
+      - net
+
+  frontend:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile.frontend
+    container_name: frontend 
+    environment:
+      - VITE_RAGPOSIUM_URL="nginx/api"
+    ports:
+      - "3000:3000"
+    networks:
+      - net
+  
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-dev.conf:/etc/nginx/nginx.conf
+      - certs:/etc/letsencrypt/live
+    networks:
+      - net
+    depends_on:
+      - api
+      - frontend
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certs:/etc/letsencrypt/live
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot && sleep 12h; done;'"
+    depends_on:
+      - nginx
+
+volumes:
+  certs:

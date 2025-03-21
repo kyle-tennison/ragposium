@@ -15,16 +15,10 @@ def start():
 
     CoreClient.get_instance() # connect to chroma
 
-    certs_dir = Path(__file__).parent.parent.parent.parent / "certs"
-    ssl_keyfile = certs_dir / "localhost-key.pem"
-    ssl_certfile = certs_dir / "localhost.pem"
-
     uvicorn.run(
         fastapi_app, 
         host="0.0.0.0", 
         port=8080,
-        ssl_keyfile=ssl_keyfile,
-        ssl_certfile=ssl_certfile
         )
 
 

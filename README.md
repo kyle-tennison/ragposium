@@ -4,7 +4,7 @@ Backend for [Ragposium](https://ragposium.com).
 
 ## Local Setup
 
-### SSL Certificates
+### SSL Certificates (for Development)
 
 Install [`justfile`](https://github.com/casey/just) to run sh scripts:
 
@@ -28,10 +28,16 @@ This should populate the `certs/` directory with localhost certificates.
 
 ### Docker Compose
 
-To spin up the containers, install [Docker](https://www.docker.com/) and run:
+To spin up the containers locally, install [Docker](https://www.docker.com/) and run:
 
 ```bash
-docker compose up
+docker compose -f docker/docker-compose-dev.yml up
 ```
 
 from the repo root to start the server and [ChromaDB](https://www.trychroma.com/) instances.
+
+## Deployment
+
+## SSL Certificates
+
+Use certbot to generate a 
