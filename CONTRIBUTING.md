@@ -48,4 +48,3 @@ When prompted on the method of authentication, it is usually easiest to momentar
 ### Deployment
 
 To refresh the deployment, run `sudo just restart-prod`.
-
