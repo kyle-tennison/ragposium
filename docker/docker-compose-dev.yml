@@ -1,4 +1,3 @@
-
 networks:
   net:
     driver: bridge
@@ -37,14 +36,14 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         - VITE_RAGPOSIUM_URL=http://localhost/api/
-    container_name: frontend 
+    container_name: frontend
     environment:
       - VITE_RAGPOSIUM_URL="nginx/api"
     ports:
       - "3000:3000"
     networks:
       - net
-  
+
   nginx:
     image: nginx:latest
     ports:
