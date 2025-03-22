@@ -1,53 +1,22 @@
 # Ragposium 
 
+[![Deployment](https://github.com/kyle-tennison/ragposium/actions/workflows/deploy.yml/badge.svg)](https://github.com/kyle-tennison/ragposium/actions/workflows/deploy.yml)
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
+![FastAPI Logo](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+
+
 Backend for [Ragposium](https://ragposium.com).
 
-## Local Setup
+## Overview
 
-### Submodule
+Ragposium is a service for **retrieving academic papers using RAG**. For those who are not familiar, RAG stands for **Retrieval-Augmented Generation**; this process uses embedding matrices from large language models to create context-rich vectors of some text document—in this case, the academic paper. RAG is typically used within LLM workflows, but I think it can also be advantageous in research searches. Such an approach allows relevant papers to appear in a query, *even if the keywords/terminology are different.*
 
-The [react site](https://github.com/kyletennison/ragposium-react) is provided as a submodule to this repository. After cloning, you may need to run the following to load the submodule:
+Ragposium uses a **dataset of over 2 million papers** provided via Cornell University's [Arxiv](https://arxiv.org) service. This dataset is provided for free on behalf of [Kaggle](http://kaggle.com/).[^1] The *abstracts of these papers* are ingested into [ChromaDB](https://www.trychroma.com/), a popular vector database. To reduce computing costs, Ragposium uses the default `all-MiniLM-L6-v2` embedding model provided with ChromaDB.
 
-```bash
-git submodule update --init --recursive
-```
+The ChromaDB stores the Arxiv dataset, along with a dataset of **10,000 common English words** provided by MIT's Eric Price [here](https://www.mit.edu/~ecprice/wordlist.10000). These words are ingested using the same `all-MiniLM-L6-v2` model and allow users to see what words have strong correlations with their query.  
 
-### Docker Compose
+[^1]: The dataset can be found here: https://www.kaggle.com/datasets/Cornell-University/arxiv
 
-To spin up the containers locally, install [Docker](https://www.docker.com/) and run:
+## Contributing
 
-```bash
-docker compose -f docker/docker-compose-dev.yml up
-```
-
-Alternatively, the cluster can be refreshed (down, build, up) using:
-
-```bash
-just restart-dev
-```
-
-from the repo root to start the server and [ChromaDB](https://www.trychroma.com/) instances.
-
-## Deployment
-
-### SSL Certificates
-
-Install certbot:
-
-```bash
-sudo snap install --classic certbot
-sudo ln -s /snap/bin/certbot /usr/bin/certbot
-```
-
-Then, generate the certificates with
-
-```bash
-sudo certbot certonly -d ragposium.com -d www.ragposium.com
-```
-
-When prompted on the method of authentication, it is usually easiest to momentarily host a webserver such that certbot can automatically preform the ACME challenge; this is (as of March 2025) the first option (1) that certbot provides. After runnind this command, the [production docker compose file](docker/docker-compose-prod.yml) will automatically be able to reference the certificates.
-
-### Deployment
-
-To refresh the deployment, run `sudo just restart-prod`.
-
+For information on contributing, view [CONTRIBUTING.md](CONTRIBUTING.md)
