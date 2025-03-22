@@ -1,6 +1,7 @@
 import json
 from pprint import pprint
-from typing import Self
+import re
+from typing import Self, cast
 
 import chromadb
 from loguru import logger
@@ -62,9 +63,19 @@ class CoreClient:
         distances: list[float] = (results.get("distances") or [])[0]
 
         for metadata in (results.get("metadatas") or [])[0]:
+
+            if arxiv_id:=cast(str, metadata.get("arxiv_id")):
+                pass 
+            else:
+                match = re.search(r'arxiv\.org/(?:abs|pdf)/(\d{4}\.\d+)', str(metadata["url"]))
+                arxiv_id = match.group(1) if match else None
+
+            assert arxiv_id
+
             metadatas.append(
                 PaperMetadata(
                     url=str(metadata["url"]),
+                    arxiv_id=arxiv_id,
                     title=str(metadata["title"]),
                     authors=str(metadata["authors"]),
                     abstract=str(metadata["abstract"]),

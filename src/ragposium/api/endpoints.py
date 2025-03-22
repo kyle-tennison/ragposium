@@ -1,5 +1,6 @@
 import re
 from fastapi import FastAPI, HTTPException
+import httpx
 from ragposium.api.datamodel import QueryRequest, MessageResponse, PaperQueryResponse, DictionaryQueryResponse
 from ragposium.api.client import CoreClient
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,6 +52,20 @@ def query_papers(request: QueryRequest) -> PaperQueryResponse:
     )
 
     return papers
+
+@app.post("/generate-citation")
+async def get_arxiv_bibtex(arxiv_id: str) -> str:
+    bib_url = f"https://arxiv.org/bibtex/{arxiv_id}"
+    logger.info(f"Fetching bibtex citation at {bib_url}")
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(bib_url)
+            response.raise_for_status()
+            return response.text
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch BibTeX ({e.response.status_code}): {e.response.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @app.post("/query-dict")
 def query_dict(request: QueryRequest) -> DictionaryQueryResponse:

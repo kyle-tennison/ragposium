@@ -36,6 +36,7 @@ class PaperMetadata(BaseModel):
         The abstract of the paper.
     """
 
+    arxiv_id: str|None = None
     url: str
     title: str
     authors: str
@@ -224,6 +225,7 @@ class IngestionManager:
                     continue
 
                 metadata = PaperMetadata(
+                    arxiv_id=paper.id,
                     url=f"https://arxiv.org/abs/{paper.id}",
                     title=paper.title or "Untitled",
                     authors=paper.authors or "",
