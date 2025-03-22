@@ -23,4 +23,5 @@ jobs:
             cd ~/ragposium
             git checkout master
             git pull
+            git submodule update --init --recursive
             just restart-prod
