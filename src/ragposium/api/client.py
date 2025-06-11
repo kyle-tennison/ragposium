@@ -27,7 +27,9 @@ class CoreClient:
             raise RuntimeError("Could not establish connection to Chroma.") from e
 
         self.paper_collection = self.chroma_client.get_collection(name="ragposium")
-        self.dictionary_collection = self.chroma_client.get_collection(name="dictionary")
+        self.dictionary_collection = self.chroma_client.get_collection(
+            name="dictionary"
+        )
         logger.success("Successfully connected to Chroma.")
 
     @classmethod
@@ -63,11 +65,12 @@ class CoreClient:
         distances: list[float] = (results.get("distances") or [])[0]
 
         for metadata in (results.get("metadatas") or [])[0]:
-
-            if arxiv_id:=cast(str, metadata.get("arxiv_id")):
-                pass 
+            if arxiv_id := cast(str, metadata.get("arxiv_id")):
+                pass
             else:
-                match = re.search(r'arxiv\.org/(?:abs|pdf)/(\d{4}\.\d+)', str(metadata["url"]))
+                match = re.search(
+                    r"arxiv\.org/(?:abs|pdf)/(\d{4}\.\d+)", str(metadata["url"])
+                )
                 arxiv_id = match.group(1) if match else None
 
             assert arxiv_id
@@ -84,8 +87,9 @@ class CoreClient:
 
         return PaperQueryResponse(papers=metadatas, distances=distances)
 
-
-    def query_dictionary(self, query: str, n_results: int) -> tuple[list[str], list[float]]:
+    def query_dictionary(
+        self, query: str, n_results: int
+    ) -> tuple[list[str], list[float]]:
         """
         Query the ChromaDB dictionary collection to get the top n words that
         correspond to a query.
@@ -99,7 +103,9 @@ class CoreClient:
         """
 
         logger.info(f"Querying Chroma for {n_results} dictionary words...")
-        results = self.dictionary_collection.query(query_texts=query, n_results=n_results)
+        results = self.dictionary_collection.query(
+            query_texts=query, n_results=n_results
+        )
         logger.success(f"Chroma responded to dictionary query")
         logger.debug(f"Query response was: {results}")
 

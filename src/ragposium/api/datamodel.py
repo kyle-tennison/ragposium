@@ -21,6 +21,7 @@ class PaperQueryResponse(BaseModel):
     papers: list[PaperMetadata]
     distances: list[float]
 
+
 class DictionaryQueryResponse(BaseModel):
     """Response to dictionary query."""
 
