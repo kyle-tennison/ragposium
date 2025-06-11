@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "chromadb>=0.6.3",
+    "deprecated>=1.2.18",
     "kagglehub>=0.3.8",
     "loguru>=0.7.3",
     "pydantic>=2.10.6",

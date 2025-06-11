@@ -8,18 +8,19 @@ from ragposium.api.client import CoreClient
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+
 @app.command(name="start", help="Start the ragposium server.")
 def start():
     """Run the server."""
     logger.info("Starting server...")
 
-    CoreClient.get_instance() # connect to chroma
+    CoreClient.get_instance()  # connect to chroma
 
     uvicorn.run(
-        fastapi_app, 
-        host="0.0.0.0", 
+        fastapi_app,
+        host="0.0.0.0",
         port=8080,
-        )
+    )
 
 
 @app.command(help="Run ingester")
@@ -33,7 +34,9 @@ def ingest():
 def reset():
     "Reset ragposium entries. This will require a re-ingestion."
 
-    logger.warning("Running this will permanently delete the targeted collections. Backup before running.")
+    logger.warning(
+        "Running this will permanently delete the targeted collections. Backup before running."
+    )
 
     logger.info("Info the name of the collection to delete.")
 
