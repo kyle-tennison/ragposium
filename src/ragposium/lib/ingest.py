@@ -153,7 +153,7 @@ class IngestionManager:
         """
         logger.info("Counting entries...")
         with self.arxiv_dataset.open("r") as f:
-            count = sum(1 for _ in f.readlines())
+            count = sum(1 for _ in f)
         logger.info(f"Counted {count} entries")
         return count
 
@@ -167,7 +167,7 @@ class IngestionManager:
             An instance representing an arXiv paper.
         """
         with self.arxiv_dataset.open("r") as f:
-            for i, line in enumerate(f.readlines()):
+            for line in f:
                 yield ArxivPaper(**json.loads(line))
 
     def ingest(self) -> None:
@@ -184,19 +184,6 @@ class IngestionManager:
         """Ingest words into the dictionary database."""
 
         words = self.load_mit_words()
-
-        # requests.get("https://www.mit.edu/~ecprice/wordlist.10000")
-
-        # dictionary_dataset = self.download_dictionary() / "unigram_freq.csv"
-        # with dictionary_dataset.open() as f:
-        #     for i, line in enumerate(f.readlines()):
-
-        #         # skip headers
-        #         if i == 0:
-        #             continue
-
-        #         if i < 150_000:
-        #             words.append(line.split(',')[0].strip())
 
         logger.debug(f"Words sample: {words[:25]}")
 
